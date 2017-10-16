@@ -2,7 +2,7 @@
 #define N 63
 int main(void)
 {
-	char c='\n';
+	char c='a';
 	printf("%s","Hello");
 	return 0;
 }

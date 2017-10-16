@@ -240,8 +240,6 @@ PretreatmentLine = #[^\r\n]+
   "\\\""                         { string.append( '\"' ); }
   "\\'"                          { string.append( '\'' ); }
   "\\\\"                         { string.append( '\\' ); }
-  /*\\[0-3]?{OctDigit}?{OctDigit}  { char val = (char) Integer.parseInt(yytext().substring(1),8);
-                        				   string.append( val ); }*/
   
   /* error cases */
   \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }
@@ -261,7 +259,6 @@ PretreatmentLine = #[^\r\n]+
   "\\\""                       {  return CType.CHARACTER_LITERAL;}
   "\\'"                        {  return CType.CHARACTER_LITERAL;}
   "\\\\"                       {  return CType.CHARACTER_LITERAL;}
-  \\[0-3]?{OctDigit}?{OctDigit}\' { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL; }
   
   /* error cases */
   \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }
