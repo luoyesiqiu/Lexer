@@ -253,14 +253,14 @@ PretreatmentLine = #[^\r\n]+
   {SingleCharacter}          {  return CType.CHARACTER_LITERAL; }
   
   /* escape sequences */
-  "\\b"\'                        { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL;}
-  "\\t"\'                        { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL;}
-  "\\n"\'                        { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL;}
-  "\\f"\'                        { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL;}
-  "\\r"\'                        { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL;}
-  "\\\""\'                       { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL;}
-  "\\'"\'                        { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL;}
-  "\\\\"\'                       { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL;}
+  "\\b"                        {  return CType.CHARACTER_LITERAL;}
+  "\\t"                        {  return CType.CHARACTER_LITERAL;}
+  "\\n"                        {  return CType.CHARACTER_LITERAL;}
+  "\\f"                        {  return CType.CHARACTER_LITERAL;}
+  "\\r"                        {  return CType.CHARACTER_LITERAL;}
+  "\\\""                       {  return CType.CHARACTER_LITERAL;}
+  "\\'"                        {  return CType.CHARACTER_LITERAL;}
+  "\\\\"                       {  return CType.CHARACTER_LITERAL;}
   \\[0-3]?{OctDigit}?{OctDigit}\' { yybegin(YYINITIAL); return CType.CHARACTER_LITERAL; }
   
   /* error cases */
