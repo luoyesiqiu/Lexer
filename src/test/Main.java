@@ -23,7 +23,7 @@ public class Main {
 			//1.状态的位置
 			//2.状态的名称
 			//3.状态的内容
-			String target=String.format("(%d,%s,%s)", idx,cType.name(),cLexer.yytext());
+			String target=String.format("(%d,%s,\"%s\")", idx,cType.name(),cLexer.yytext());
 			System.out.println(target);
 			idx+=cType.ordinal();//ordinal返回状态内容的长度
 			
