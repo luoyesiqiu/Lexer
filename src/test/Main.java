@@ -14,19 +14,23 @@ public class Main {
 		CLexer cLexer=new CLexer(fileReader);
 		int idx=0;
 		while (true) {
-			try{
-			CType cType=cLexer.yylex();
-			if(cType==CType.EOF)
+			try
 			{
-				break;
-			}
-			//这里输出三个数据
-			//1.状态的位置
-			//2.状态的名称
-			//3.状态的内容
-			String target=String.format("(%d,%s,\"%s\")", idx,cType.name(),cLexer.yytext());
-			System.out.println(target);
-			idx+=cType.ordinal();//ordinal返回状态内容的长度
+				CType cType=cLexer.yylex();
+				if(cType==CType.EOF)
+				{
+					break;
+				}
+				//这里输出三个数据
+				//1.状态的位置
+				//2.状态的名称
+				//3.状态的内容
+				//4.内容的长度
+				int len=cLexer.yytext().length();
+				String target=//cLexer.yytext();
+				String.format("(%d,%s,\"%s\",%d)", idx,cType.name(),cLexer.yytext(),len);
+				System.out.println(target);
+				idx+=len;
 			}
 			catch(Exception e)
 			{

@@ -1,8 +1,9 @@
-#include <stdio.h>
-#define N 63
+#define N 10
+/*A c language demo*/
 int main(void)
 {
+
 	char c='\0';
-	printf("%s","Hello");
+	printf("Hello\n");
 	return 0;
 }

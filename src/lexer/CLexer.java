@@ -958,6 +958,8 @@ public class CLexer {
     while (true) {
       zzMarkedPosL = zzMarkedPos;
 
+      yychar+= zzMarkedPosL-zzStartRead;
+
       boolean zzR = false;
       int zzCh;
       int zzCharCount;
@@ -1088,7 +1090,7 @@ public class CLexer {
             }
           case 36: break;
           case 2: 
-            { /* ignore */
+            { return CType.SPACE;
             }
           case 37: break;
           case 3: 
@@ -1108,11 +1110,11 @@ public class CLexer {
             }
           case 41: break;
           case 7: 
-            { yybegin(STRING);
+            { yybegin(STRING);string.setLength(0);string.append('\"'); return CType.STRING;
             }
           case 42: break;
           case 8: 
-            { yybegin(CHARLITERAL);
+            { yybegin(CHARLITERAL);return CType.CHARACTER_LITERAL;
             }
           case 43: break;
           case 9: 
@@ -1148,7 +1150,7 @@ public class CLexer {
             }
           case 51: break;
           case 17: 
-            { string.append( yytext() ); return CType.STRING;
+            { string.append( yytext() ); string.append('\"'); return CType.STRING;
             }
           case 52: break;
           case 18: 
@@ -1156,7 +1158,7 @@ public class CLexer {
             }
           case 53: break;
           case 19: 
-            { yybegin(YYINITIAL);string.setLength(0);
+            { yybegin(YYINITIAL);return CType.STRING;
             }
           case 54: break;
           case 20: 
@@ -1168,7 +1170,7 @@ public class CLexer {
             }
           case 56: break;
           case 22: 
-            { yybegin(YYINITIAL);
+            { yybegin(YYINITIAL);return CType.CHARACTER_LITERAL;
             }
           case 57: break;
           case 23: 
@@ -1192,35 +1194,35 @@ public class CLexer {
             }
           case 62: break;
           case 28: 
-            { string.append( '\"' );
+            { string.append( '\"' ); return CType.STRING;
             }
           case 63: break;
           case 29: 
-            { string.append( '\'' );
+            { string.append( '\'' ); return CType.STRING;
             }
           case 64: break;
           case 30: 
-            { string.append( '\\' );
+            { string.append( '\\' ); return CType.STRING;
             }
           case 65: break;
           case 31: 
-            { string.append( '\t' );
+            { string.append( '\t' ); return CType.STRING;
             }
           case 66: break;
           case 32: 
-            { string.append( '\b' );
+            { string.append( '\b' );return CType.STRING;
             }
           case 67: break;
           case 33: 
-            { string.append( '\r' );
+            { string.append( '\r' ); return CType.STRING;
             }
           case 68: break;
           case 34: 
-            { string.append( '\n' );
+            { string.append( '\n' ); return CType.STRING;
             }
           case 69: break;
           case 35: 
-            { string.append( '\f' );
+            { string.append( '\f' ); return CType.STRING;
             }
           case 70: break;
           default:

@@ -19,5 +19,6 @@ public enum CType{
  DOT, //点
  CHARACTER_LITERAL,//字符
  STRING, //字符串
- PRETREATMENT_LINE//预处理
+ PRETREATMENT_LINE,//预处理
+ SPACE//空白符
 }

@@ -30,9 +30,11 @@ package lexer;
 
 %line
 %column
-
+%char
+%type CType
 
 %{
+	/*StringBuilder暂时没用*/
   StringBuilder string = new StringBuilder();
   
 
@@ -192,10 +194,10 @@ PretreatmentLine = #[^\r\n]+
   ">>>="                         { return CType.OPERATOR; }
   
   /* 字符串 */
-   \"                             { yybegin(STRING); }
+   \"                             { yybegin(STRING);string.setLength(0);string.append('\"'); return CType.STRING;}
 
   /* 字符 */
-  \'                             { yybegin(CHARLITERAL); }
+  \'                             { yybegin(CHARLITERAL);return CType.CHARACTER_LITERAL; }
 
   /* numeric literals */
 
@@ -219,35 +221,37 @@ PretreatmentLine = #[^\r\n]+
   {Comment}                      { return CType.COMMENT; }
 
   /* 空白符 */
-  {WhiteSpace}                   { /* ignore */ }
+  {WhiteSpace}                   { return CType.SPACE; }
 
   /* 标识符 */ 
   {Identifier}                   { return CType.IDENTIFIER; }  
   {PretreatmentLine}					 { return CType.PRETREATMENT_LINE; }
 }
 
+
 <STRING> {
-  \"                             { yybegin(YYINITIAL);string.setLength(0);}
+    \"                             { yybegin(YYINITIAL);return CType.STRING;}
   
-  {StringCharacter}+             { string.append( yytext() ); return CType.STRING;  }
+  {StringCharacter}+             { string.append( yytext() ); string.append('\"'); return CType.STRING;}
   
   /* escape sequences */
-  "\\b"                          { string.append( '\b' ); }
-  "\\t"                          { string.append( '\t' ); }
-  "\\n"                          { string.append( '\n' ); }
-  "\\f"                          { string.append( '\f' ); }
-  "\\r"                          { string.append( '\r' ); }
-  "\\\""                         { string.append( '\"' ); }
-  "\\'"                          { string.append( '\'' ); }
-  "\\\\"                         { string.append( '\\' ); }
+  "\\b"                          { string.append( '\b' );return CType.STRING; }
+  "\\t"                          { string.append( '\t' ); return CType.STRING;}
+  "\\n"                          { string.append( '\n' ); return CType.STRING;}
+  "\\f"                          { string.append( '\f' ); return CType.STRING;}
+  "\\r"                          { string.append( '\r' ); return CType.STRING;}
+  "\\\""                         { string.append( '\"' ); return CType.STRING;}
+  "\\'"                          { string.append( '\'' ); return CType.STRING;}
+  "\\\\"                         { string.append( '\\' ); return CType.STRING;}
   
+
   /* error cases */
   \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }
   {LineTerminator}               { throw new RuntimeException("Unterminated string at end of line"); }
 }
 
 <CHARLITERAL> {
-   \'							{yybegin(YYINITIAL);}
+   \'							{yybegin(YYINITIAL);return CType.CHARACTER_LITERAL;}
   {SingleCharacter}          {  return CType.CHARACTER_LITERAL; }
   
   /* escape sequences */
