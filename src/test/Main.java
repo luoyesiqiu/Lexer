@@ -14,6 +14,7 @@ public class Main {
 		CLexer cLexer=new CLexer(fileReader);
 		int idx=0;
 		while (true) {
+			try{
 			CType cType=cLexer.yylex();
 			if(cType==CType.EOF)
 			{
@@ -26,7 +27,11 @@ public class Main {
 			String target=String.format("(%d,%s,\"%s\")", idx,cType.name(),cLexer.yytext());
 			System.out.println(target);
 			idx+=cType.ordinal();//ordinal返回状态内容的长度
-			
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 

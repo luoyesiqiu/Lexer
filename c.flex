@@ -259,7 +259,7 @@ PretreatmentLine = #[^\r\n]+
   "\\\""                       {  return CType.CHARACTER_LITERAL;}
   "\\'"                        {  return CType.CHARACTER_LITERAL;}
   "\\\\"                       {  return CType.CHARACTER_LITERAL;}
-  
+  \\[0-9]                       {  return CType.CHARACTER_LITERAL;}
   /* error cases */
   \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }
   {LineTerminator}               { throw new RuntimeException("Unterminated character literal at end of line"); }
