@@ -4,6 +4,6 @@ int main(void)
 {
 
 	char c='\0';
-	printf("Hello\n");
+	printf("Hello\0");
 	return 0;
 }

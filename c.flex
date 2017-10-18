@@ -34,27 +34,7 @@ package lexer;
 %type CType
 
 %{
-	/*StringBuilder暂时没用*/
-  StringBuilder string = new StringBuilder();
-  
 
-  /** 
-   * assumes correct representation of a long value for 
-   * specified radix in scanner buffer from <code>start</code> 
-   * to <code>end</code> 
-   */
-  private long parseLong(int start, int end, int radix) {
-    long result = 0;
-    long digit;
-
-    for (int i = start; i < end; i++) {
-      digit  = Character.digit(yycharat(i),radix);
-      result*= radix;
-      result+= digit;
-    }
-
-    return result;
-  }
 %}
 
 /* main character classes */
@@ -112,7 +92,6 @@ PretreatmentLine = #[^\r\n]+
   "case"                         { return CType.KEYWORD; }
   "catch"                        { return CType.KEYWORD; }
   "char"                         { return CType.KEYWORD; }
-  "class"                        { return CType.KEYWORD; }
   "const"                        { return CType.KEYWORD; }
   "continue"                     { return CType.KEYWORD; }
   "default"                      { return CType.KEYWORD; }
@@ -193,8 +172,8 @@ PretreatmentLine = #[^\r\n]+
   ">>="                          { return CType.OPERATOR; }
   ">>>="                         { return CType.OPERATOR; }
   
-  /* 字符串 */
-   \"                             { yybegin(STRING);string.setLength(0);string.append('\"'); return CType.STRING;}
+  /* 字符串开始 */
+   \"                             { yybegin(STRING); return CType.STRING;}
 
   /* 字符 */
   \'                             { yybegin(CHARLITERAL);return CType.CHARACTER_LITERAL; }
@@ -225,25 +204,24 @@ PretreatmentLine = #[^\r\n]+
 
   /* 标识符 */ 
   {Identifier}                   { return CType.IDENTIFIER; }  
-  {PretreatmentLine}					 { return CType.PRETREATMENT_LINE; }
+  {PretreatmentLine}			 { return CType.PRETREATMENT_LINE; }
 }
-
 
 <STRING> {
     \"                             { yybegin(YYINITIAL);return CType.STRING;}
   
-  {StringCharacter}+             { string.append( yytext() ); string.append('\"'); return CType.STRING;}
+  {StringCharacter}+             {  return CType.STRING;}
   
   /* escape sequences */
-  "\\b"                          { string.append( '\b' );return CType.STRING; }
-  "\\t"                          { string.append( '\t' ); return CType.STRING;}
-  "\\n"                          { string.append( '\n' ); return CType.STRING;}
-  "\\f"                          { string.append( '\f' ); return CType.STRING;}
-  "\\r"                          { string.append( '\r' ); return CType.STRING;}
-  "\\\""                         { string.append( '\"' ); return CType.STRING;}
-  "\\'"                          { string.append( '\'' ); return CType.STRING;}
-  "\\\\"                         { string.append( '\\' ); return CType.STRING;}
-  
+  "\\b"                          { return CType.STRING; }
+  "\\t"                          {  return CType.STRING;}
+  "\\n"                          {  return CType.STRING;}
+  "\\f"                          {  return CType.STRING;}
+  "\\r"                          {  return CType.STRING;}
+  "\\\""                         {  return CType.STRING;}
+  "\\'"                          {  return CType.STRING;}
+  "\\\\"                         {  return CType.STRING;}
+    \\[0-9]                      {  return CType.STRING;}
 
   /* error cases */
   \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }
@@ -263,7 +241,7 @@ PretreatmentLine = #[^\r\n]+
   "\\\""                       {  return CType.CHARACTER_LITERAL;}
   "\\'"                        {  return CType.CHARACTER_LITERAL;}
   "\\\\"                       {  return CType.CHARACTER_LITERAL;}
-  \\[0-9]                       {  return CType.CHARACTER_LITERAL;}
+  \\[0-9]                      {  return CType.CHARACTER_LITERAL;}
   /* error cases */
   \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }
   {LineTerminator}               { throw new RuntimeException("Unterminated character literal at end of line"); }
