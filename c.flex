@@ -75,17 +75,27 @@ FLit2    = \. [0-9]+
 FLit3    = [0-9]+ 
 Exponent = [eE] [+-]? [0-9]+
 
-/* string and character literals */
+/* 字符串和字符 */
 StringCharacter = [^\r\n\"\\]
 SingleCharacter = [^\r\n\'\\]
-PretreatmentLine = #[^\r\n]+
+
+/*单行预处理*/
+PretreatmentLine = [ ]*#[ ]*(error|else|elif|endif|line|include|pragma)[^\r\n//]*
+
+/*define等多行处理*/
+DefineLine = [ ]*#[ ]*(if|ifdef|ifndef|define|undef)[ ]+(.*?\\(\n|\r|\r\n))*[^\n\r//]+
 
 %state STRING, CHARLITERAL
 
 %%
 
 <YYINITIAL> {
-
+  /*单行预处理*/
+  {PretreatmentLine}			 { return CType.PRETREATMENT_LINE; }
+  
+   /*define*/
+  {DefineLine}			 		{ return CType.DEFINE_LINE; }
+  
   /* 关键字 */
   "auto"                         { return CType.KEYWORD; }
   "break"                        { return CType.KEYWORD; }
@@ -200,51 +210,27 @@ PretreatmentLine = #[^\r\n]+
   {Comment}                      { return CType.COMMENT; }
 
   /* 空白符 */
-  {WhiteSpace}                   { return CType.SPACE; }
+  {WhiteSpace}                   { return CType.WHITE_SPACE; }
 
   /* 标识符 */ 
-  {Identifier}                   { return CType.IDENTIFIER; }  
-  {PretreatmentLine}			 { return CType.PRETREATMENT_LINE; }
+  {Identifier}                   { return CType.IDENTIFIER; } 
+  
+
 }
 
 <STRING> {
     \"                             { yybegin(YYINITIAL);return CType.STRING;}
   
-  {StringCharacter}+             {  return CType.STRING;}
-  
-  /* escape sequences */
-  "\\b"                          { return CType.STRING; }
-  "\\t"                          {  return CType.STRING;}
-  "\\n"                          {  return CType.STRING;}
-  "\\f"                          {  return CType.STRING;}
-  "\\r"                          {  return CType.STRING;}
-  "\\\""                         {  return CType.STRING;}
-  "\\'"                          {  return CType.STRING;}
-  "\\\\"                         {  return CType.STRING;}
-    \\[0-9]                      {  return CType.STRING;}
-
-  /* error cases */
-  \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }
-  {LineTerminator}               { throw new RuntimeException("Unterminated string at end of line"); }
+  {StringCharacter}+             	{  return CType.STRING;}
+  \\.				            	 {  return CType.STRING;}
+  {LineTerminator}             	    { throw new RuntimeException("Unterminated string at end of line"); }
 }
 
 <CHARLITERAL> {
    \'							{yybegin(YYINITIAL);return CType.CHARACTER_LITERAL;}
-  {SingleCharacter}          {  return CType.CHARACTER_LITERAL; }
-  
-  /* escape sequences */
-  "\\b"                        {  return CType.CHARACTER_LITERAL;}
-  "\\t"                        {  return CType.CHARACTER_LITERAL;}
-  "\\n"                        {  return CType.CHARACTER_LITERAL;}
-  "\\f"                        {  return CType.CHARACTER_LITERAL;}
-  "\\r"                        {  return CType.CHARACTER_LITERAL;}
-  "\\\""                       {  return CType.CHARACTER_LITERAL;}
-  "\\'"                        {  return CType.CHARACTER_LITERAL;}
-  "\\\\"                       {  return CType.CHARACTER_LITERAL;}
-  \\[0-9]                      {  return CType.CHARACTER_LITERAL;}
-  /* error cases */
-  \\.                            { throw new RuntimeException("Illegal escape sequence \""+yytext()+"\""); }
-  {LineTerminator}               { throw new RuntimeException("Unterminated character literal at end of line"); }
+  {SingleCharacter}          	{  return CType.CHARACTER_LITERAL; }
+   \\.				            {  return CType.CHARACTER_LITERAL;}
+  {LineTerminator}              { throw new RuntimeException("Unterminated character literal at end of line"); }
 }
 
 /* error fallback */
