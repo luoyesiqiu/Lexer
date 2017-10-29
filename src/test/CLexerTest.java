@@ -6,7 +6,7 @@ import java.io.IOException;
 import lexer.CLexer;
 import lexer.CType;
 
-public class Main {
+public class CLexerTest {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
