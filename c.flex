@@ -1,24 +1,3 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Copyright (C) 1998-2015  Gerwin Klein <lsf@jflex.de>                    *
- * All rights reserved.                                                    *
- *                                                                         *
- * License: BSD                                                            *
- *                                                                         *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-/* Java 1.2 language lexer specification */
-
-/* Use together with unicode.flex for Unicode preprocesssing */
-/* and java12.cup for a Java 1.2 parser                      */
-
-/* Note that this lexer specification is not tuned for speed.
-   It is in fact quite slow on integer and floating point literals, 
-   because the input is read twice and the methods used to parse
-   the numbers are not very fast. 
-   For a production quality application (e.g. a Java compiler) 
-   this could be optimized */
-
-
 package lexer;
 
 %%
@@ -40,8 +19,8 @@ package lexer;
 /* main character classes */
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
-
-WhiteSpace = {LineTerminator} | [ \t\f]
+WhiteCharacter = [ \t\f]
+WhiteSpace = {LineTerminator} | {WhiteCharacter}
 
 /* 注释 */
 Comment = {TraditionalComment} | {EndOfLineComment} | 
@@ -80,21 +59,26 @@ StringCharacter = [^\r\n\"\\]
 SingleCharacter = [^\r\n\'\\]
 
 /*单行预处理*/
-PretreatmentLine = [ ]*#[ ]*(error|else|elif|endif|line|include|pragma)[^\r\n//]*
+PretreatmentLine = #[ ]*(error|else|elif|endif|line|include|pragma)
 
 /*define等多行处理*/
-DefineLine = [ ]*#[ ]*(if|ifdef|ifndef|define|undef)[ ]+(.*?\\(\n|\r|\r\n))*[^\n\r//]+
 
-%state STRING, CHARLITERAL
+DefineLine = #[ ]*(if|ifdef|ifndef|define|undef)
+
+DefineNewLine = \\
+
+%state STRING, CHARLITERAL,PRETREATMENT,DEFINE,DEFINE_NEW_LINE
 
 %%
 
 <YYINITIAL> {
+
+  
   /*单行预处理*/
-  {PretreatmentLine}			 { return CType.PRETREATMENT_LINE; }
+  {PretreatmentLine}			 { yybegin(PRETREATMENT);return CType.PRETREATMENT_LINE; }
   
    /*define*/
-  {DefineLine}			 		{ return CType.DEFINE_LINE; }
+  {DefineLine}			 		{ { yybegin(DEFINE);return CType.DEFINE_LINE; } }
   
   /* 关键字 */
   "auto"                         { return CType.KEYWORD; }
@@ -112,7 +96,8 @@ DefineLine = [ ]*#[ ]*(if|ifdef|ifndef|define|undef)[ ]+(.*?\\(\n|\r|\r\n))*[^\n
   "enum"						 { return CType.KEYWORD; }
   "float"                        { return CType.KEYWORD; }
   "for"                          { return CType.KEYWORD; }
-
+  
+  
   "long"                         { return CType.KEYWORD; }
   "goto"                         { return CType.KEYWORD; }
   "if"                           { return CType.KEYWORD; }
@@ -131,6 +116,7 @@ DefineLine = [ ]*#[ ]*(if|ifdef|ifndef|define|undef)[ ]+(.*?\\(\n|\r|\r\n))*[^\n
   "union"                     	 { return CType.KEYWORD; }
   "void"                         { return CType.KEYWORD; }
   "while"                        { return CType.KEYWORD; }
+  
   
   /* 分隔符 */
   "("                            { return CType.LPAREN; }
@@ -169,7 +155,6 @@ DefineLine = [ ]*#[ ]*(if|ifdef|ifndef|define|undef)[ ]+(.*?\\(\n|\r|\r\n))*[^\n
   "%"                            { return CType.OPERATOR; }
   "<<"                           { return CType.OPERATOR; }
   ">>"                           { return CType.OPERATOR; }
-  ">>>"                          { return CType.OPERATOR; }
   "+="                           { return CType.OPERATOR; }
   "-="                           { return CType.OPERATOR; }
   "*="                           { return CType.OPERATOR; }
@@ -180,7 +165,6 @@ DefineLine = [ ]*#[ ]*(if|ifdef|ifndef|define|undef)[ ]+(.*?\\(\n|\r|\r\n))*[^\n
   "%="                           { return CType.OPERATOR; }
   "<<="                          { return CType.OPERATOR; }
   ">>="                          { return CType.OPERATOR; }
-  ">>>="                         { return CType.OPERATOR; }
   
   /* 字符串开始 */
    \"                             { yybegin(STRING); return CType.STRING;}
@@ -209,28 +193,104 @@ DefineLine = [ ]*#[ ]*(if|ifdef|ifndef|define|undef)[ ]+(.*?\\(\n|\r|\r\n))*[^\n
   /* comments */
   {Comment}                      { return CType.COMMENT; }
 
-  /* 空白符 */
-  {WhiteSpace}                   { return CType.WHITE_SPACE; }
+  /* 换行符 */
+  {LineTerminator}                   { return CType.NEW_LINE; }
 
+    /* 空白符 */
+  {WhiteCharacter}                   { return CType.WHITE_CHAR; }
+  
   /* 标识符 */ 
   {Identifier}                   { return CType.IDENTIFIER; } 
   
-
 }
+/*单行宏*/
+<PRETREATMENT>{
+	[a-zA-Z0-9_-]					{ return CType.PRETREATMENT_LINE; }
+	\"                         		{ return CType.PRETREATMENT_LINE; }
+    "<"                            { return CType.PRETREATMENT_LINE; }
+    ">"                            { return CType.PRETREATMENT_LINE; }
+    "."                            { return CType.PRETREATMENT_LINE; }
+	{Comment}						{ yybegin(YYINITIAL);return CType.COMMENT; }
+	{LineTerminator} 				{ yybegin(YYINITIAL);return CType.NEW_LINE; }
+	{WhiteCharacter}				{ return CType.PRETREATMENT_LINE; }
+	"/"                            { return CType.PRETREATMENT_LINE; }/*空格*/
+}
+/*多行宏*/
+<DEFINE>{
+	[a-zA-Z0-9_]					{ return CType.DEFINE_LINE; }
+	"?"								{ return CType.DEFINE_LINE; }
+	"("                          { return CType.DEFINE_LINE; }
+  ")"                            { return CType.DEFINE_LINE; }
+  "{"                            { return CType.DEFINE_LINE; }
+  "}"                            { return CType.DEFINE_LINE; }
+  "["                            { return CType.DEFINE_LINE; }
+  "]"                            { return CType.DEFINE_LINE; }
+  ";"                            { return CType.DEFINE_LINE; }
+  ","                            { return CType.DEFINE_LINE; }
+  "."                            { return CType.DEFINE_LINE; }
+  
+  /* 运算符 */
+  "="                            { return CType.DEFINE_LINE; }
+  ">"                            { return CType.DEFINE_LINE; }
+  "<"                            { return CType.DEFINE_LINE; }
+  "!"                            { return CType.DEFINE_LINE; }
+  "~"                            { return CType.DEFINE_LINE; }
+  "?"                            { return CType.DEFINE_LINE; }
+  ":"                            { return CType.DEFINE_LINE; }
+  "=="                           { return CType.DEFINE_LINE; }
+  "<="                           { return CType.DEFINE_LINE; }
+  ">="                           { return CType.DEFINE_LINE; }
+  "!="                           { return CType.DEFINE_LINE; }
+  "&&"                           { return CType.DEFINE_LINE; }
+  "||"                           { return CType.DEFINE_LINE; }
+  "++"                           { return CType.DEFINE_LINE; }
+  "--"                           { return CType.DEFINE_LINE; }
+  "+"                            { return CType.DEFINE_LINE; }
+  "-"                            { return CType.DEFINE_LINE; }
+  "*"                            { return CType.DEFINE_LINE; }
+  "/"                            { return CType.DEFINE_LINE; }
+  "&"                            { return CType.DEFINE_LINE; }
+  "|"                            { return CType.DEFINE_LINE; }
+  "^"                            { return CType.DEFINE_LINE; }
+  "%"                            { return CType.DEFINE_LINE; }
+  "<<"                           { return CType.DEFINE_LINE; }
+  ">>"                           { return CType.DEFINE_LINE; }
+  "+="                           { return CType.DEFINE_LINE; }
+  "-="                           { return CType.DEFINE_LINE; }
+  "*="                           { return CType.DEFINE_LINE; }
+  "/="                           { return CType.DEFINE_LINE; }
+  "&="                           { return CType.DEFINE_LINE; }
+  "|="                           { return CType.DEFINE_LINE; }
+  "^="                           { return CType.DEFINE_LINE; }
+  "%="                           { return CType.DEFINE_LINE; }
+  "<<="                          { return CType.DEFINE_LINE; }
+  ">>="                          { return CType.DEFINE_LINE; }
+  {WhiteCharacter}				{ return CType.DEFINE_LINE; }/*空格*/
+  {DefineNewLine}				{ yybegin(DEFINE_NEW_LINE);return CType.DEFINE_LINE; }/*遇到新行，继续*/
+  
+  {LineTerminator} 				{ yybegin(YYINITIAL);return CType.NEW_LINE; }
+  {Comment}						{ yybegin(YYINITIAL);return CType.COMMENT; }
+}
+
+/*宏换行时*/
+<DEFINE_NEW_LINE>{
+	{WhiteCharacter}							{ return CType.DEFINE_LINE; }/*跳回DEFINE状态*/
+	{LineTerminator}							{ yybegin(DEFINE);return CType.DEFINE_LINE; }/*跳回DEFINE状态*/
+}
+
 
 <STRING> {
     \"                             { yybegin(YYINITIAL);return CType.STRING;}
-  
   {StringCharacter}+             	{  return CType.STRING;}
   \\.				            	 {  return CType.STRING;}
-  {LineTerminator}             	    { throw new RuntimeException("Unterminated string at end of line"); }
+  {LineTerminator}             	    {yybegin(YYINITIAL);return CType.NEW_LINE;}
 }
 
 <CHARLITERAL> {
    \'							{yybegin(YYINITIAL);return CType.CHARACTER_LITERAL;}
   {SingleCharacter}          	{  return CType.CHARACTER_LITERAL; }
    \\.				            {  return CType.CHARACTER_LITERAL;}
-  {LineTerminator}              { throw new RuntimeException("Unterminated character literal at end of line"); }
+  {LineTerminator}               {yybegin(YYINITIAL);return CType.NEW_LINE;}
 }
 
 /* error fallback */

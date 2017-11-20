@@ -21,5 +21,6 @@ public enum CType{
  STRING, //字符串
  PRETREATMENT_LINE,//预处理
  WHITE_SPACE,//空白符
- DEFINE_LINE//define
-}
+ DEFINE_LINE,//define
+ NEW_LINE
+, WHITE_CHAR}
