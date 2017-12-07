@@ -4,6 +4,7 @@
 
 包含以下下编程语言的词法分析器：
 * C
+* C++
 * Java
 * JavaScript
 
