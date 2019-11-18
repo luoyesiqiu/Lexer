@@ -2,14 +2,14 @@
 
 简单词法分析器，由Jflex生成。
 
-包含以下下编程语言的词法分析器：
+包含以下编程语言的词法分析器：
 * C
 * C++
 * Java
 * JavaScript
 
 
-xxLexer.java是词法分析器类。假如使用c语言词法分析器，调用方法如下：
+xxLexer.java是词法分析器类。假如使用C语言词法分析器，调用方法如下：
 
 ```
 FileReader fileReader=new FileReader("jflexTest.c");
